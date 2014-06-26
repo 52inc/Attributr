@@ -1,0 +1,18 @@
+<resources>
+
+    <style name="card_shadow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/card_shadow</item>
+        <item name="android:src">@drawable/card_shadow</item>
+        <item name="android:layout_below">@id/inner_frame</item>
+    </style>
+
+    <style name="rounded_card_shadow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/rounded_card_shadow</item>
+        <item name="android:src">@drawable/rounded_card_shadow</item>
+        <item name="android:layout_below">@id/inner_frame</item>
+        <item name="android:translationY">-2dp</item>
+    </style>
+
+</resources>

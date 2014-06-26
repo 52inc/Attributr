@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:paddingTop="16dp"
+              android:paddingLeft="16dp"
+              android:paddingRight="16dp"
+        >
+
+    <!-- Card Shadow -->
+    <ImageView style="@style/rounded_card_shadow"
+            android:layout_below="@+id/inner_frame"
+            />
+
+    <!-- Library Description Container -->
+    <RelativeLayout android:id="@+id/inner_frame"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:padding="16dp"
+                  android:background="@drawable/card_selector"
+            >
+
+        <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:text="HoloEverywhere"
+                android:textSize="18sp"
+                android:textColor="@color/black"
+                />
+
+        <TextView
+                android:id="@+id/author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/name"
+
+                android:text="Christophe Versieux"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:alpha=".4"
+                />
+
+        <ImageView
+            android:id="@+id/source_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:padding="4dp"
+
+            android:src="@drawable/ic_action_github_light"
+            android:contentDescription="View Source"
+
+            android:background="@drawable/card_selector"
+            />
+
+
+        <TextView
+            android:id="@+id/license_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/headerGrey"
+            android:layout_below="@+id/author"
+
+            android:text="@string/mit_license"
+            android:textColor="@color/holo_darkGrey"
+            android:layout_marginTop="16dp"
+            android:padding="8dp"
+            />
+
+    </RelativeLayout>
+
+</RelativeLayout>

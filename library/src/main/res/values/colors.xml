@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="black">#000</color>
+    <color name="white">#FFF</color>
+    <color name="black11">#1c000000</color>
+    <color name="black8">#14000000</color>
+    <color name="headerGrey">#dddddd</color>
+    <color name="darkGrey">#666666</color>
+    <color name="holo_lightGrey">#aaaaaa</color>
+    <color name="holo_grey">#555555</color>
+    <color name="holo_darkGrey">#333333</color>
+
+    <!-- Card Colors -->
+    <color name="card_pressed">#5E000000</color>
+    <color name="header_button_default">#494949</color>
+    <color name="card_gray">#E5E5E5</color>
+    <color name="card_background">#DFDFDF</color>
+
+</resources>
