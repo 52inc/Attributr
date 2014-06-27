@@ -10,6 +10,8 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +42,7 @@ public class Parser {
      * Parse Configuration file from resources
      *
      * @param ctx               the application context
-     * @param configFileResId   the configuration file resource identifier
+     * @param configFileResId   the configuration file resource identifier, from the raw folder
      * @return                  the list of parsed library items
      */
     public static List<Library> parse(Context ctx, int configFileResId){
@@ -48,12 +50,13 @@ public class Parser {
 
         // Load licence information from XML configuration in root application
         try{
-
-            XmlResourceParser parser = ctx.getResources().getXml(configFileResId);
+            XmlPullParser parser = Xml.newPullParser();
+            InputStream xmlRawInput = ctx.getResources().openRawResource(configFileResId);
+            parser.setInput(new InputStreamReader(xmlRawInput));
             parser.nextTag();
 
             // Verify start tag
-            //parser.require(XmlPullParser.START_TAG, null, CONFIG_TAG);
+            parser.require(XmlPullParser.START_TAG, null, CONFIG_TAG);
 
             // Iterate and parse child nodes
             while(parser.next() != XmlPullParser.END_TAG) {
@@ -112,7 +115,7 @@ public class Parser {
                     lib.source = readSimpleTextContent(SOURCE_TAG, parser);
                     break;
                 case LICENSE_TAG:
-                    lib.licenseText = readSimpleTextContent(LICENSE_TAG, parser);
+                    lib.licenseText = readSimpleTextContent(LICENSE_TAG, parser).trim().replaceAll("\\\\n", "\n");
                     break;
                 default:
                     skip(parser);

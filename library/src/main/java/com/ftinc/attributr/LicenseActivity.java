@@ -36,6 +36,7 @@ public class LicenseActivity extends Activity {
      *
      */
 
+    public static final String EXTRA_NAME = "name";
     public static final String EXTRA_CONFIG = "config";
     public static final String EXTRA_THEME = "theme";
     public static final String EXTRA_ICON = "icon";
@@ -45,12 +46,12 @@ public class LicenseActivity extends Activity {
     private ListView mList;
 
     private LibraryListAdapter mAdapter;
-    private LibraryListAdapter.ILibraryActionListener mActionListener;
 
     // Library array
     private List<Library> mLibraries = new ArrayList<>();
 
     // XML Config File
+    private String mName;
     private int mConfigFile;
     private int mTheme;
     private int mIcon;
@@ -72,6 +73,7 @@ public class LicenseActivity extends Activity {
             mConfigFile = xtras.getInt(EXTRA_CONFIG, 0);
             mTheme = xtras.getInt(EXTRA_THEME, 0);
             mIcon = xtras.getInt(EXTRA_ICON, 0);
+            mName = xtras.getString(EXTRA_NAME, getString(R.string.license_activity_title));
         }
 
         // Check for a theme, and apply if available
@@ -106,24 +108,24 @@ public class LicenseActivity extends Activity {
             getActionBar().setIcon(mIcon);
         }
 
+        // Set Name if available
+        if(mName != null){
+            getActionBar().setTitle(mName);
+        }
+
         // Parse Configuration and create adapter
         mLibraries = Parser.parse(this, mConfigFile);
         mAdapter = new LibraryListAdapter(this, R.layout.layout_library_item, mLibraries);
 
         // Create Dummy footer views
         View footer = new View(this);
-        AbsListView.LayoutParams params = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+        AbsListView.LayoutParams params = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) Utils.dpToPx(this, 16f));
         footer.setLayoutParams(params);
         mList.addFooterView(footer, null, false);
 
         // Set adapter and click listeners
         mList.setAdapter(mAdapter);
         mList.setOnItemClickListener(mItemClickListener);
-
-        // Set action listener if available
-        if(mActionListener != null){
-            mAdapter.setActionListener(mActionListener);
-        }
     }
 
     @Override

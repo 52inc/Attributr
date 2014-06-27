@@ -69,9 +69,8 @@
             android:layout_marginTop="16dp"
             android:padding="8dp"
 
-            android:shadowColor="@color/black"
-            android:shadowRadius="5"
-            android:shadowDx="1"
+            android:shadowColor="@color/black11"
+            android:shadowRadius="1"
             android:shadowDy="1"
             />
 
