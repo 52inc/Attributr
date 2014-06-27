@@ -8,7 +8,7 @@ An Android library for easily displaying a list of license attributions for 3rd 
 
 ## Usage
 
-1.	#### Configuration File
+1. #### Configuration File
 
 		<Configuration>
 	
