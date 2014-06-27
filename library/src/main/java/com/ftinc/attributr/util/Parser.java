@@ -3,6 +3,8 @@ package com.ftinc.attributr.util;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
+import android.util.Xml;
+
 import com.ftinc.attributr.model.Library;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -26,11 +28,13 @@ public class Parser {
      *
      */
 
+    public static final String CONFIG_TAG = "Configuration";
     public static final String LIBRARY_TAG = "Library";
-    public static final String ATTR_NAME = "name";
-    public static final String ATTR_AUTHOR = "author";
-    public static final String ATTR_SOURCE = "source";
-    public static final String ATTR_LICENSE = "license";
+
+    public static final String NAME_TAG = "Name";
+    public static final String AUTHOR_TAG = "Author";
+    public static final String SOURCE_TAG = "Source";
+    public static final String LICENSE_TAG = "License";
 
     /**
      * Parse Configuration file from resources
@@ -44,27 +48,29 @@ public class Parser {
 
         // Load licence information from XML configuration in root application
         try{
+
             XmlResourceParser parser = ctx.getResources().getXml(configFileResId);
+            parser.nextTag();
 
-            // Parse dat shit
-            parser.next();
-            int eventType = parser.getEventType();
-            while(eventType != XmlPullParser.END_DOCUMENT){
+            // Verify start tag
+            //parser.require(XmlPullParser.START_TAG, null, CONFIG_TAG);
 
-                // Look for tags
-                if(eventType == XmlPullParser.START_TAG && parser.getName().equalsIgnoreCase(LIBRARY_TAG)){
-
-                    // Get the name of the library from the attributes
-                    String name = parser.getAttributeValue(null, ATTR_NAME);
-                    String author = parser.getAttributeValue(null, ATTR_AUTHOR);
-                    String source = parser.getAttributeValue(null, ATTR_SOURCE);
-                    String license = parser.getAttributeValue(null, ATTR_LICENSE);
-
-                    // Construct library object, and add to return list
-                    Library lib = new Library(name, author, source, license);
-                    libs.add(lib);
+            // Iterate and parse child nodes
+            while(parser.next() != XmlPullParser.END_TAG) {
+                if (parser.getEventType() != XmlPullParser.START_TAG) {
+                    continue;
                 }
-                eventType = parser.next();
+
+                // Get the name of the tag
+                String name = parser.getName();
+                if(name.equalsIgnoreCase(LIBRARY_TAG)){
+                    // parse  info
+                    Library lib = readLibrary(parser);
+                    libs.add(lib);
+                }else{
+                    skip(parser);
+                }
+
             }
 
         }catch(Resources.NotFoundException e){
@@ -78,4 +84,98 @@ public class Parser {
         return libs;
     }
 
+    /**
+     * Read a library element
+     * @param parser
+     * @return
+     */
+    private static Library readLibrary(XmlPullParser parser) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, null, LIBRARY_TAG);
+
+        Library lib = new Library();
+
+        // Parse Children
+        while(parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
+
+            String name = parser.getName();
+            switch (name) {
+                case NAME_TAG:
+                    lib.name = readSimpleTextContent(NAME_TAG, parser);
+                    break;
+                case AUTHOR_TAG:
+                    lib.author = readSimpleTextContent(AUTHOR_TAG, parser);
+                    break;
+                case SOURCE_TAG:
+                    lib.source = readSimpleTextContent(SOURCE_TAG, parser);
+                    break;
+                case LICENSE_TAG:
+                    lib.licenseText = readSimpleTextContent(LICENSE_TAG, parser);
+                    break;
+                default:
+                    skip(parser);
+            }
+        }
+
+        return lib;
+    }
+
+    /**
+     * Skip the current tag in the parser
+     *
+     * @param parser
+     * @throws XmlPullParserException
+     * @throws IOException
+     */
+    private static void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
+        if (parser.getEventType() != XmlPullParser.START_TAG) {
+            throw new IllegalStateException();
+        }
+        int depth = 1;
+        while (depth != 0) {
+            switch (parser.next()) {
+                case XmlPullParser.END_TAG:
+                    depth--;
+                    break;
+                case XmlPullParser.START_TAG:
+                    depth++;
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Read the text content between the start and end tags
+     *
+     * @param parser
+     * @return
+     * @throws IOException
+     * @throws XmlPullParserException
+     */
+    private static String readText(XmlPullParser parser) throws IOException, XmlPullParserException {
+        String result = "";
+        if (parser.next() == XmlPullParser.TEXT) {
+            result = parser.getText();
+            parser.nextTag();
+        }
+        return result;
+    }
+
+    /**
+     * Read and validate simple text content node
+     *
+     * @param nodeName
+     * @param parser
+     * @return
+     * @throws IOException
+     * @throws XmlPullParserException
+     */
+    private static String readSimpleTextContent(String nodeName, XmlPullParser parser) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, null, nodeName);
+        String textContent = readText(parser);
+        parser.require(XmlPullParser.END_TAG, null, nodeName);
+        return textContent;
+    }
 }

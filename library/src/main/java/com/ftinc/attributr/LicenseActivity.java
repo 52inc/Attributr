@@ -12,6 +12,7 @@ import android.widget.*;
 import com.ftinc.attributr.adapters.LibraryListAdapter;
 import com.ftinc.attributr.model.Library;
 
+import com.ftinc.attributr.util.Parser;
 import com.ftinc.attributr.util.Utils;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -35,17 +36,13 @@ public class LicenseActivity extends Activity {
      *
      */
 
-    public static final String LIBRARY_TAG = "Library";
-    public static final String ATTR_NAME = "name";
-    public static final String ATTR_AUTHOR = "author";
-    public static final String ATTR_SOURCE = "source";
-    public static final String ATTR_LICENSE = "license";
-
+    public static final String EXTRA_CONFIG = "config";
+    public static final String EXTRA_THEME = "theme";
+    public static final String EXTRA_ICON = "icon";
 
 
     // The List View
     private ListView mList;
-    private GridView mGrid;
 
     private LibraryListAdapter mAdapter;
     private LibraryListAdapter.ILibraryActionListener mActionListener;
@@ -67,29 +64,27 @@ public class LicenseActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // Get configuration from Intent
+        super.onCreate(savedInstanceState);
+
+        // Get configuration extras from the intent
         Bundle xtras = getIntent().getExtras();
         if(xtras != null){
-            mConfigFile = xtras.getInt("config", 0);
-            mTheme = xtras.getInt("theme", 0);
-            mIcon = xtras.getInt("icon", 0);
+            mConfigFile = xtras.getInt(EXTRA_CONFIG, 0);
+            mTheme = xtras.getInt(EXTRA_THEME, 0);
+            mIcon = xtras.getInt(EXTRA_ICON, 0);
         }
 
+        // Check for a theme, and apply if available
         if(mTheme != 0){
             setTheme(mTheme);
         }
 
-        super.onCreate(savedInstanceState);
+        // Set the content view of this activity
         setContentView(R.layout.activity_license);
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // Load listview
-        View container = findViewById(R.id.license_list);
-        if(container instanceof ListView){
-            mList = (ListView) container;
-        }else if(container instanceof GridView){
-            mGrid = (GridView) container;
-        }
+        // Load listview or grid
+        mList = (ListView) findViewById(R.id.license_list);
 
         // Look for saved licences file
         if(savedInstanceState != null){
@@ -99,9 +94,9 @@ public class LicenseActivity extends Activity {
             }
         }
 
-        // Safety
+        // Ensure that a config file was passed along, quitting if there is wasn't
         if(mConfigFile == 0){
-            Utils.log(TAG, "No valid config file for the LicenceFragment");
+            Utils.log(TAG, "No valid config file for the LicenseActivity");
             finish();
             return;
         }
@@ -112,24 +107,18 @@ public class LicenseActivity extends Activity {
         }
 
         // Parse Configuration and create adapter
-        mLibraries = parseConfigFile();
+        mLibraries = Parser.parse(this, mConfigFile);
         mAdapter = new LibraryListAdapter(this, R.layout.layout_library_item, mLibraries);
 
-        // Create Dummy header/footer views
-        if(mList != null) {
-            View header = new View(this);
-            View footer = new View(this);
-            AbsListView.LayoutParams params = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-            header.setLayoutParams(params);
-            footer.setLayoutParams(params);
-            mList.addHeaderView(header, null, false);
-            mList.addFooterView(footer, null, false);
-            mList.setAdapter(mAdapter);
-            mList.setOnItemClickListener(mItemClickListener);
-        }else if(mGrid != null){
-            mGrid.setAdapter(mAdapter);
-            mGrid.setOnItemClickListener(mItemClickListener);
-        }
+        // Create Dummy footer views
+        View footer = new View(this);
+        AbsListView.LayoutParams params = new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+        footer.setLayoutParams(params);
+        mList.addFooterView(footer, null, false);
+
+        // Set adapter and click listeners
+        mList.setAdapter(mAdapter);
+        mList.setOnItemClickListener(mItemClickListener);
 
         // Set action listener if available
         if(mActionListener != null){
@@ -160,6 +149,10 @@ public class LicenseActivity extends Activity {
      *
      */
 
+    /**
+     * Library list item click listener to launch the source webpage to view the library
+     * source
+     */
     private AdapterView.OnItemClickListener mItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -169,69 +162,5 @@ public class LicenseActivity extends Activity {
             startActivity(link);
         }
     };
-
-    /**
-     * Parse the XML config file and load the third party library references
-     * @return      a list of parsed Library objects
-     */
-    private List<Library> parseConfigFile(){
-        List<Library> libs = new ArrayList<Library>();
-
-        // Load licence information from XML configuration in root application
-        try{
-            XmlResourceParser parser = getResources().getXml(mConfigFile);
-
-            // Parse dat shit
-            parser.next();
-            int eventType = parser.getEventType();
-            while(eventType != XmlPullParser.END_DOCUMENT){
-
-                // Look for tags
-                if(eventType == XmlPullParser.START_TAG && parser.getName().equalsIgnoreCase(LIBRARY_TAG)){
-
-                    // Get the name of the library from the attributes
-                    String name = parser.getAttributeValue(null, ATTR_NAME);
-                    String author = parser.getAttributeValue(null, ATTR_AUTHOR);
-                    String source = parser.getAttributeValue(null, ATTR_SOURCE);
-                    String license = parser.getAttributeValue(null, ATTR_LICENSE);
-
-                    // Construct library object, and add to return list
-                    Library lib = new Library(name, author, source, license);
-                    libs.add(lib);
-                }
-                eventType = parser.next();
-            }
-
-        }catch(Resources.NotFoundException e){
-            Utils.log(TAG, "ERROR: Config file not found [" + e.getLocalizedMessage() + "]");
-        } catch (XmlPullParserException e) {
-            Utils.log(TAG, "ERROR: Unable to parse configuration [" + e.getLocalizedMessage() + "]");
-        } catch (IOException e) {
-            Utils.log(TAG, "ERROR: Unable to load config file [" + e.getLocalizedMessage() + "]");
-        }
-
-        return libs;
-    }
-
-    /**
-     * Set the action listener for when a user selects the source or license link
-     * buttons. This is to allow maximum flexibility so the user of this object can specify
-     * what method they want to use to display those weblinks (external, or internally)
-     *
-     * @param listener      the action listener
-     */
-    public void setLibraryActionListener(LibraryListAdapter.ILibraryActionListener listener){
-        mActionListener = listener;
-        if(mAdapter != null){
-            mAdapter.setActionListener(mActionListener);
-        }
-    }
-
-    /**************************************************************
-     *
-     * Inner Classes and Interfaces
-     *
-     */
-
 
 }

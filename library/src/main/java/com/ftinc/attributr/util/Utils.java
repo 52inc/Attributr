@@ -23,7 +23,7 @@ public class Utils {
 	 * This is the 'DEBUG' flag that signifies whether this application 
 	 * is in development mode, or production mode
 	 */
-	public static boolean DEBUG = false;
+	public static boolean DEBUG = true;
 	
 
 	/**
