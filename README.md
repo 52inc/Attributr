@@ -1,5 +1,7 @@
 #Attributr
 
+#**[DEPRECATED]**
+This library is no longer maintained and has been replaced in [52Kit](https://github.com/52inc/android-52Kit)
 
 ## Summary
 
